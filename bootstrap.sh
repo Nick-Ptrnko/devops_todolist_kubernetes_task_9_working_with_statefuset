@@ -35,7 +35,7 @@ kubectl wait --for=condition=ready pod -l app=mysql -n mysql --timeout=120s
 echo -e "${GREEN}Налаштування додатку (Secrets, ConfigMaps)...${NC}"
 kubectl apply -f .infrastructure/secret.yml
 kubectl apply -f .infrastructure/app-db-secret.yml
-kubectl apply -f .infrastructure/confgiMap.yml
+kubectl apply -f .infrastructure/configMap.yml
 kubectl apply -f .infrastructure/app-settings-patch.yml
 
 echo -e "${GREEN}Розгортання додатку (Deployment та Service)...${NC}"
