@@ -20,15 +20,6 @@ spec:
       containers:
       - name: todoapp
         image: ikulyk404/todoapp:3.0.0
-        volumeMounts:
-        - name: data
-          mountPath: /app/data
-        - name: app-secrets-volume
-          mountPath: "/app/secrets"
-          readOnly: true
-        - name: app-config-volume
-          mountPath: "/app/configs"
-          readOnly: true
         resources:
           requests:
             memory: "256Mi"
@@ -47,20 +38,61 @@ spec:
             secretKeyRef:
               name: app-secret
               key: SECRET_KEY
+        - name: DB_ENGINE
+          value: "django.db.backends.mysql"
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: db-connection
+              key: NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-connection
+              key: USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-connection
+              key: PASSWORD
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-connection
+              key: HOST
+        - name: DB_PORT
+          value: "3306"
+
         ports:
         - containerPort: 8080
+
         livenessProbe:
           httpGet:
-            path: api/health
+            path: /api/health
             port: 8080
           initialDelaySeconds: 60
           periodSeconds: 5
         readinessProbe:
           httpGet:
-            path: api/ready
+            path: /api/ready
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
+
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: app-secrets-volume
+          mountPath: "/app/secrets"
+          readOnly: true
+        - name: app-config-volume
+          mountPath: "/app/configs"
+          readOnly: true
+        # Монтування виправленого файлу налаштувань
+        - name: settings-patch-vol
+          mountPath: /app/todolist/settings.py
+          subPath: settings.py
+
       volumes:
       - name: data
         persistentVolumeClaim:
@@ -71,3 +103,7 @@ spec:
       - name: app-config-volume
         configMap:
           name: app-config
+      # Оголошення тому для підміни settings.py
+      - name: settings-patch-vol
+        configMap:
+          name: app-settings-patch
